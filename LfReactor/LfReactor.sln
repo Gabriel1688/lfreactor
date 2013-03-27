@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LfReactor", "src\LfReactor.vcxproj", "{94884BF0-C60B-4FC0-8FBA-079A609C70B8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{94884BF0-C60B-4FC0-8FBA-079A609C70B8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{94884BF0-C60B-4FC0-8FBA-079A609C70B8}.Debug|Win32.Build.0 = Debug|Win32
+		{94884BF0-C60B-4FC0-8FBA-079A609C70B8}.Release|Win32.ActiveCfg = Release|Win32
+		{94884BF0-C60B-4FC0-8FBA-079A609C70B8}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

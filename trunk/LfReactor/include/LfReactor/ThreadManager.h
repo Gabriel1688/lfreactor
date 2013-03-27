@@ -15,7 +15,7 @@ class LfEventObserver;
 class DYNAMIC_LIB ThreadManager
 {
 public:
-	ThreadManager(SockReactor* SockReactor);
+	ThreadManager(SockReactor* SockReactor = &SockReactor::instance());
 	~ThreadManager();
 
 	void registerEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer);

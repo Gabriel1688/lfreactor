@@ -24,7 +24,7 @@ void SockNotification::setSocket(const Poco::Net::Socket& socket)
 
 SockReactor& SockNotification::source()
 {
-    return *m_pReactor
+    return *m_pReactor;
 }
 
 Poco::Net::Socket& SockNotification::socket()

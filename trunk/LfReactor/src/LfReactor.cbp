@@ -46,7 +46,7 @@
 		<Unit filename="../include/LfReactor/LfThread.h" />
 		<Unit filename="../include/LfReactor/SockAcceptor.h" />
 		<Unit filename="../include/LfReactor/SockNotification.h">
-			<Option target="&lt;{~None~}&gt;" />
+			<Option target="Debug" />
 		</Unit>
 		<Unit filename="../include/LfReactor/SockNotifier.h" />
 		<Unit filename="../include/LfReactor/SockReactor.h" />
@@ -55,7 +55,7 @@
 		<Unit filename="LfEventObserver.cpp" />
 		<Unit filename="LfThread.cpp" />
 		<Unit filename="SockNotification.cpp">
-			<Option target="&lt;{~None~}&gt;" />
+			<Option target="Debug" />
 		</Unit>
 		<Unit filename="SockNotifier.cpp" />
 		<Unit filename="SockReactor.cpp" />

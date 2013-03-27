@@ -36,7 +36,7 @@ public:
 
     virtual void registerAcceptor(ThreadManager& thrManager)
     {
-        m_thrManager = &thManager;
+        m_thrManager = &thrManager;
         m_thrManager->registerEventHandler(m_socket, Poco::Observer<SockAcceptor, ReadableNotification>(*this, &SockAcceptor::onAccept));
     }
 
@@ -63,7 +63,7 @@ protected:
 
     ThreadManager* threadMgr()
     {
-        return m_thrManager
+        return m_thrManager;
     }
 
     Poco::Net::Socket& socket()

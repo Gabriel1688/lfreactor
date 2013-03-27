@@ -18,12 +18,12 @@ public:
 	~LfThread();
 
 	void active();
-	
+
 	void stop();
 
-private:
-	void run();
+    void run();
 
+private:
 	ThreadManager* m_thrManager;
 	Poco::Event m_condition;
 	bool m_isRunning;

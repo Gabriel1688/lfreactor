@@ -40,6 +40,7 @@ public:
 
 	void handleEvents();
 
+	static SockReactor& instance();
 
 protected:
 	virtual void onTimeout();
@@ -83,6 +84,7 @@ private:
 	Poco::Net::Socket::SocketList m_writeableSockets;
 	Poco::Net::Socket::SocketList m_exceptSockets;
 
+    static SockReactor _sockReactor;
 
 	friend class SockNotifier;
 	friend class ThreadManager;

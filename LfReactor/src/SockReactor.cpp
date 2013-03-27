@@ -3,13 +3,15 @@
 
 #include "NameSpaceDefine.h"
 #include ADD_QUOTE(INC_NAME_HEADER(NAMESPACE_NAME, SockReactor.h))
-#include ADD_QUOTE(INC_NAME_HEADER(NAMESPACE_NAME, SockNotifier.h))
 #include ADD_QUOTE(INC_NAME_HEADER(NAMESPACE_NAME, SockNotification.h))
+#include ADD_QUOTE(INC_NAME_HEADER(NAMESPACE_NAME, SockNotifier.h))
 
 #include "Poco/ErrorHandler.h"
 #include "Poco/Exception.h"
 
 BEGIN_CXX_NAMESPACE_DEFINITION
+
+SockReactor SockReactor::_sockReactor;
 
 SockReactor::SockReactor() : m_timeout(DEFAULT_TIMEOUT),
 m_pReadableNotification(new ReadableNotification(this)),
@@ -139,6 +141,11 @@ void SockReactor::handleEvents()
         dispatch(m_exceptSockets.front(), m_pErrorNotification);
         m_exceptSockets.erase(m_exceptSockets.begin());
     }
+}
+
+SockReactor& SockReactor::instance()
+{
+    return _sockReactor;
 }
 
 void SockReactor::onTimeout()

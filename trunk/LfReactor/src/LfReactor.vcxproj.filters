@@ -1,0 +1,39 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <None Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="include">
+      <UniqueIdentifier>{2925437e-12e2-4cde-a747-5b2f44a63b99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src">
+      <UniqueIdentifier>{ef3c9d83-849c-4bbd-9a8b-402a6ab83abe}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\include\LfReactor\ThreadManager.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\NameSpaceDefine.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LfReactor\Reactor.h">
+      <Filter>include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\LfReactor\LfThread.h">
+      <Filter>include</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="LfThread.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="ThreadManager.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="Reactor.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

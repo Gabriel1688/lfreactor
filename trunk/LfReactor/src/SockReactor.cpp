@@ -120,6 +120,9 @@ void SockReactor::handleEvents()
         else if (!Poco::Net::Socket::select(m_readableSockets, m_writeableSockets, m_exceptSockets, m_timeout))
         {
             onTimeout();
+            m_readableSockets.clear();
+            m_writeableSockets.clear();
+            m_exceptSockets.clear();
             return;
         }
     }

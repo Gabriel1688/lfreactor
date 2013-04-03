@@ -33,7 +33,7 @@ void LfEventObserver::notify(Poco::Notification* pNf) const
 bool LfEventObserver::equals(const Poco::AbstractObserver& observer) const
 {
     const LfEventObserver* lfObs = dynamic_cast<const LfEventObserver*>(&observer);
-    return lfObs && m_observer->equals(*lfObs);
+    return lfObs && m_observer->equals(*(lfObs->m_observer));
 }
 
 bool LfEventObserver::accepts(Poco::Notification* pNf) const

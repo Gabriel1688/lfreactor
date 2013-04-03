@@ -129,20 +129,23 @@ void SockReactor::handleEvents()
 
     if (m_readableSockets.size() != 0)
     {
-        dispatch(m_readableSockets.front(), m_pReadableNotification);
+        Poco::Net::Socket socket(m_readableSockets.front());
         m_readableSockets.erase(m_readableSockets.begin());
+        dispatch(socket, m_pReadableNotification);
     }
 
     if (m_writeableSockets.size() != 0)
     {
-        dispatch(m_writeableSockets.front(), m_pWritableNotification);
+        Poco::Net::Socket socket(m_writeableSockets.front());
         m_writeableSockets.erase(m_writeableSockets.begin());
+        dispatch(socket, m_pWritableNotification);
     }
 
     if (m_exceptSockets.size() != 0)
     {
-        dispatch(m_exceptSockets.front(), m_pErrorNotification);
+        Poco::Net::Socket socket(m_exceptSockets.front());
         m_exceptSockets.erase(m_exceptSockets.begin());
+        dispatch(socket, m_pErrorNotification);
     }
 }
 

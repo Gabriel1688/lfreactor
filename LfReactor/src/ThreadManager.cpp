@@ -53,6 +53,20 @@ void ThreadManager::handleEvents()
 	m_reactor->handleEvents();
 }
 
+void ThreadManager::stopAll()
+{
+    Poco::Mutex::ScopedLock locker(m_thrMutex);
+    while (!m_thrStack.empty())
+    {
+        LfThread* lfThr = m_thrStack.top();
+        lfThr->stop();
+        m_thrStack.pop();
+    }
+
+    if (m_leaderThr)
+        m_leaderThr->stop();
+}
+
 void ThreadManager::suspendEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer)
 {
     m_reactor->suspendEventHandler(socket, observer);

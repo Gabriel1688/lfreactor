@@ -22,6 +22,7 @@ void LfThread::active()
 void LfThread::stop()
 {
 	m_isRunning = false;
+	m_condition.set();
 }
 
 void LfThread::run()
@@ -31,7 +32,11 @@ void LfThread::run()
 	while (m_isRunning)
 	{
 		if (m_thrManager->join(this) != this) //try to be a leader, if can't to be a follower
+		{
 			m_condition.wait();
+			if (!m_isRunning)
+                return;
+		}
 
 		m_thrManager->handleEvents();
 	}

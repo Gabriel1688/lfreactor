@@ -104,7 +104,7 @@ int main()
     LfReactor::LfThread thr3(&thrMgr);
     LfReactor::LfThread thr4(&thrMgr);
 
-    ThreadPool thrPool(1);
+    ThreadPool thrPool(4);
     thrPool.start(thr1);
     thrPool.start(thr2);
     thrPool.start(thr3);
@@ -130,6 +130,9 @@ int main()
     testPool.start(test8);
 
     testPool.joinAll();
+
+    thrMgr.stopAll();
+    thrPool.joinAll();
 
     return 0;
 }

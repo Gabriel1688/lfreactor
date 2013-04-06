@@ -28,6 +28,8 @@ public:
 
 	void handleEvents();
 
+	void stopAll();
+
 private:
     void suspendEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer);
 

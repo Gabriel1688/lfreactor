@@ -4,6 +4,7 @@
 #include "Poco/ThreadPool.h"
 #include "Poco/Net/StreamSocket.h"
 #include "LfReactor/SockAcceptor.h"
+#include "LfReactor/SockConnector.h"
 
 #include <cstring>
 #include <cstdio>
@@ -93,12 +94,60 @@ private:
     Net::SocketAddress m_address;
 };
 
+class ClientHandler
+{
+public:
+    ClientHandler(Net::StreamSocket& socket, LfReactor::ThreadManager& thMgr) :
+        m_socket(socket), m_thMgr(&thMgr)
+    {
+        m_thMgr->registerEventHandler(m_socket, Poco::Observer<ClientHandler, LfReactor::ReadableNotification>(*this, &ClientHandler::onReadable));
+        char msg[100];
+        memset(msg, 0, sizeof(msg));
+        strcpy(msg, "client handler connect to you!");
+        socket.sendBytes(msg, strlen(msg) + 1);
+    }
+
+    ~ClientHandler()
+    {
+        m_thMgr->removeEventHandler(m_socket, Poco::Observer<ClientHandler, LfReactor::ReadableNotification>(*this, &ClientHandler::onReadable));
+    }
+
+    void onReadable(LfReactor::ReadableNotification* pNotification)
+    {
+        pNotification->release();
+
+        char msg[100];
+        memset(msg, 0, sizeof(msg));
+
+        int n = m_socket.receiveBytes(msg, sizeof(msg));
+
+        if (n <= 0)
+        {
+            delete this;
+            return;
+        }
+
+        {
+            Mutex::ScopedLock lock(consoleMutex);
+            cout << "thread " << Poco::Thread::currentTid() << " client handler get message: " << msg << endl;
+        }
+
+        m_socket.shutdownSend();
+    }
+
+private:
+    Net::StreamSocket m_socket;
+    LfReactor::ThreadManager* m_thMgr;
+};
+
 int main()
 {
     LfReactor::ThreadManager thrMgr;
     Net::SocketAddress ssa;
     Net::ServerSocket socket(ssa);
+    Net::SocketAddress addr("localhost", socket.address().port());
     LfReactor::SockAcceptor<ServiceHandler> acceptor(socket, thrMgr);
+    LfReactor::SockConnector<ClientHandler> connector(addr, thrMgr);
     LfReactor::LfThread thr1(&thrMgr);
     LfReactor::LfThread thr2(&thrMgr);
     LfReactor::LfThread thr3(&thrMgr);
@@ -110,14 +159,14 @@ int main()
     thrPool.start(thr3);
     thrPool.start(thr4);
 
-    TestClient test1(1, Net::SocketAddress("localhost", socket.address().port()));
-    TestClient test2(2, Net::SocketAddress("localhost", socket.address().port()));
-    TestClient test3(3, Net::SocketAddress("localhost", socket.address().port()));
-    TestClient test4(4, Net::SocketAddress("localhost", socket.address().port()));
-    TestClient test5(5, Net::SocketAddress("localhost", socket.address().port()));
-    TestClient test6(6, Net::SocketAddress("localhost", socket.address().port()));
-    TestClient test7(7, Net::SocketAddress("localhost", socket.address().port()));
-    TestClient test8(8, Net::SocketAddress("localhost", socket.address().port()));
+    TestClient test1(1, addr);
+    TestClient test2(2, addr);
+    TestClient test3(3, addr);
+    TestClient test4(4, addr);
+    TestClient test5(5, addr);
+    TestClient test6(6, addr);
+    TestClient test7(7, addr);
+    TestClient test8(8, addr);
 
     ThreadPool testPool(8);
     testPool.start(test1);

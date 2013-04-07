@@ -45,6 +45,7 @@
 		<Unit filename="../include/LfReactor/LfEventObserver.h" />
 		<Unit filename="../include/LfReactor/LfThread.h" />
 		<Unit filename="../include/LfReactor/SockAcceptor.h" />
+		<Unit filename="../include/LfReactor/SockConnector.h" />
 		<Unit filename="../include/LfReactor/SockNotification.h">
 			<Option target="Debug" />
 		</Unit>

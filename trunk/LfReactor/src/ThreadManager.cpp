@@ -43,8 +43,8 @@ void ThreadManager::promoteNewLeader()
 	else
 	{
 		m_leaderThr = m_thrStack.top();
-		m_leaderThr->active();
 		m_thrStack.pop();
+		m_leaderThr->active();
 	}
 }
 

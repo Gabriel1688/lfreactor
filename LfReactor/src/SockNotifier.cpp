@@ -38,7 +38,7 @@ void SockNotifier::removeObserver(SockReactor* pReactor, const Poco::AbstractObs
             if (observer.equals(**it))
             {
                 m_observers.erase(it);
-                return;
+                break;
             }
         }
 	}

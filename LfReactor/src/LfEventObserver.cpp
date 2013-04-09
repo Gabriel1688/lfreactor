@@ -23,6 +23,7 @@ LfEventObserver::~LfEventObserver()
 void LfEventObserver::notify(Poco::Notification* pNf) const
 {
     m_thrManager.suspendEventHandler(m_socket, *this);
+
     m_thrManager.promoteNewLeader();
 
     m_observer->notify(pNf);

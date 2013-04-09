@@ -27,6 +27,7 @@ private:
 	ThreadManager* m_thrManager;
 	Poco::Event m_condition;
 	bool m_isRunning;
+	bool m_isLeader;
 };
 
 END_CXX_NAMESPACE_DEFINITION

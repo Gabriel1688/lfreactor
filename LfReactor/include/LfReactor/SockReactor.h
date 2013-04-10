@@ -34,7 +34,7 @@ public:
 	const Poco::Timespan& getTimeout() const;
 
 
-	void registerEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer);
+	void addEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer);
 
 	void removeEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer);
 

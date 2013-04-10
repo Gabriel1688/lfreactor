@@ -1,5 +1,5 @@
 //imeplement ThreadMannager
-//mlcai 2013-03-07
+//andycai.sc@gmail.com 2013-03-07
 
 #include "NameSpaceDefine.h"
 #include ADD_QUOTE(INC_NAME_HEADER(NAMESPACE_NAME, ThreadManager.h))
@@ -15,9 +15,9 @@ ThreadManager::~ThreadManager()
 {
 }
 
-void ThreadManager::registerEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer)
+void ThreadManager::addEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer)
 {
-    m_reactor->registerEventHandler(socket, LfEventObserver(socket, observer, *this));
+    m_reactor->addEventHandler(socket, LfEventObserver(socket, observer, *this));
 }
 
 void ThreadManager::removeEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer)

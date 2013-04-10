@@ -39,9 +39,9 @@ public:
 	virtual void registerConnector(ThreadManager& thrMgr)
 	{
 		m_thrManager = &thrMgr;
-		m_thrManager->registerEventHandler(m_socket, Poco::Observer<SockConnector, ReadableNotification>(*this, &SockConnector::onReadable));
-		m_thrManager->registerEventHandler(m_socket, Poco::Observer<SockConnector, WritableNotification>(*this, &SockConnector::onWritable));
-		m_thrManager->registerEventHandler(m_socket, Poco::Observer<SockConnector, ErrorNotification>(*this, &SockConnector::onError));
+		m_thrManager->addEventHandler(m_socket, Poco::Observer<SockConnector, ReadableNotification>(*this, &SockConnector::onReadable));
+		m_thrManager->addEventHandler(m_socket, Poco::Observer<SockConnector, WritableNotification>(*this, &SockConnector::onWritable));
+		m_thrManager->addEventHandler(m_socket, Poco::Observer<SockConnector, ErrorNotification>(*this, &SockConnector::onError));
 	}
 
 	virtual void unregisterConnector()

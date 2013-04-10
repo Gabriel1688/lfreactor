@@ -37,7 +37,7 @@ public:
     virtual void registerAcceptor(ThreadManager& thrManager)
     {
         m_thrManager = &thrManager;
-        m_thrManager->registerEventHandler(m_socket, Poco::Observer<SockAcceptor, ReadableNotification>(*this, &SockAcceptor::onAccept));
+        m_thrManager->addEventHandler(m_socket, Poco::Observer<SockAcceptor, ReadableNotification>(*this, &SockAcceptor::onAccept));
     }
 
     virtual void unregisterAcceptor()

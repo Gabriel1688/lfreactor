@@ -39,8 +39,8 @@
 			<Add directory="../include" />
 		</Compiler>
 		<Linker>
-			<Add library="PocoFoundation" />
-			<Add library="PocoNet" />
+			<Add library="PocoFoundationd" />
+			<Add library="PocoNetd" />
 		</Linker>
 		<Unit filename="../include/LfReactor/LfEventObserver.h" />
 		<Unit filename="../include/LfReactor/LfThread.h" />

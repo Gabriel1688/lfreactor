@@ -1,6 +1,7 @@
 //implement SockReactor
 //mlcai 2013-03-07
 
+#include <cstdio>
 #include "NameSpaceDefine.h"
 #include ADD_QUOTE(INC_NAME_HEADER(NAMESPACE_NAME, SockReactor.h))
 #include ADD_QUOTE(INC_NAME_HEADER(NAMESPACE_NAME, SockNotification.h))
@@ -47,7 +48,7 @@ const Poco::Timespan& SockReactor::getTimeout() const
     return m_timeout;
 }
 
-void SockReactor::registerEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer)
+void SockReactor::addEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer)
 {
     NotifierPtr pNotifier;
 	{
@@ -89,63 +90,88 @@ void SockReactor::removeEventHandler(const Poco::Net::Socket& socket, const Poco
 
 void SockReactor::handleEvents()
 {
-    if (m_readableSockets.empty() && m_writeableSockets.empty() && m_exceptSockets.empty())
+    try
     {
-        int nSockets = 0;
+        if (m_readableSockets.empty() && m_writeableSockets.empty() && m_exceptSockets.empty())
         {
-            Poco::FastMutex::ScopedLock lock(m_eventHMutex);
-            for (EventHandlerMap::iterator it = m_eventHandlers.begin(); it != m_eventHandlers.end(); ++it)
+            int nSockets = 0;
             {
-                if (it->second->accepts(m_pReadableNotification))
+                Poco::FastMutex::ScopedLock lock(m_eventHMutex);
+                for (EventHandlerMap::iterator it = m_eventHandlers.begin(); it != m_eventHandlers.end(); ++it)
                 {
-                    m_readableSockets.push_back(it->first);
-                    nSockets++;
-                }
-                if (it->second->accepts(m_pWritableNotification))
-                {
-                    m_writeableSockets.push_back(it->first);
-                    nSockets++;
-                }
-                if (it->second->accepts(m_pErrorNotification))
-                {
-                    m_exceptSockets.push_back(it->first);
-                    nSockets++;
+                    if (it->second->accepts(m_pReadableNotification))
+                    {
+                        m_readableSockets.push_back(it->first);
+                        nSockets++;
+                    }
+                    if (it->second->accepts(m_pWritableNotification))
+                    {
+                        m_writeableSockets.push_back(it->first);
+                        nSockets++;
+                    }
+                    if (it->second->accepts(m_pErrorNotification))
+                    {
+                        m_exceptSockets.push_back(it->first);
+                        nSockets++;
+                    }
                 }
             }
+            if (nSockets == 0)
+            {
+                onIdle();
+            }
+            else if (!Poco::Net::Socket::select(m_readableSockets, m_writeableSockets, m_exceptSockets, m_timeout))
+            {
+                onTimeout();
+                m_readableSockets.clear();
+                m_writeableSockets.clear();
+                m_exceptSockets.clear();
+                return;
+            }
         }
-        if (nSockets == 0)
+
+        if (m_readableSockets.size() != 0)
         {
-            onIdle();
+            Poco::Net::Socket socket(m_readableSockets.front());
+            m_readableSockets.erase(m_readableSockets.begin());
+            dispatch(socket, m_pReadableNotification);
         }
-        else if (!Poco::Net::Socket::select(m_readableSockets, m_writeableSockets, m_exceptSockets, m_timeout))
+        else if (m_writeableSockets.size() != 0)
         {
-            onTimeout();
-            m_readableSockets.clear();
-            m_writeableSockets.clear();
-            m_exceptSockets.clear();
-            return;
+            Poco::Net::Socket socket(m_writeableSockets.front());
+            m_writeableSockets.erase(m_writeableSockets.begin());
+            dispatch(socket, m_pWritableNotification);
+        }
+        else if (m_exceptSockets.size() != 0)
+        {
+            Poco::Net::Socket socket(m_exceptSockets.front());
+            m_exceptSockets.erase(m_exceptSockets.begin());
+            dispatch(socket, m_pErrorNotification);
         }
     }
-
-    if (m_readableSockets.size() != 0)
+    catch (Poco::Exception& exc)
     {
-        Poco::Net::Socket socket(m_readableSockets.front());
-        m_readableSockets.erase(m_readableSockets.begin());
-        dispatch(socket, m_pReadableNotification);
+        m_readableSockets.clear();
+        m_writeableSockets.clear();
+        m_exceptSockets.clear();
+        Poco::ErrorHandler::handle(exc);
+        return;
     }
-
-    if (m_writeableSockets.size() != 0)
+    catch (std::exception& exc)
     {
-        Poco::Net::Socket socket(m_writeableSockets.front());
-        m_writeableSockets.erase(m_writeableSockets.begin());
-        dispatch(socket, m_pWritableNotification);
+        m_readableSockets.clear();
+        m_writeableSockets.clear();
+        m_exceptSockets.clear();
+        Poco::ErrorHandler::handle(exc);
+        return;
     }
-
-    if (m_exceptSockets.size() != 0)
+	catch (...)
     {
-        Poco::Net::Socket socket(m_exceptSockets.front());
-        m_exceptSockets.erase(m_exceptSockets.begin());
-        dispatch(socket, m_pErrorNotification);
+        m_readableSockets.clear();
+        m_writeableSockets.clear();
+        m_exceptSockets.clear();
+        Poco::ErrorHandler::handle();
+        return;
     }
 }
 
@@ -187,11 +213,14 @@ void SockReactor::dispatch(const Poco::Net::Socket& socket, SockNotification* pN
 void SockReactor::dispatch(SockNotification* pNotification)
 {
     std::vector<NotifierPtr> delegates;
-	delegates.reserve(m_eventHandlers.size());
 	{
 		Poco::FastMutex::ScopedLock lock(m_eventHMutex);
+		delegates.reserve(m_eventHandlers.size());
 		for (EventHandlerMap::iterator it = m_eventHandlers.begin(); it != m_eventHandlers.end(); ++it)
-			delegates.push_back(it->second);
+		{
+		    if (it->second->accepts(pNotification))
+                delegates.push_back(it->second);
+		}
 	}
 	for (std::vector<NotifierPtr>::iterator it = delegates.begin(); it != delegates.end(); ++it)
 	{

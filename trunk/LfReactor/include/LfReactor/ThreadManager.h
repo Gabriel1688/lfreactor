@@ -18,7 +18,7 @@ public:
 	ThreadManager(SockReactor* SockReactor = &SockReactor::instance());
 	~ThreadManager();
 
-	void registerEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer);
+	void addEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer);
 
 	void removeEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer);
 

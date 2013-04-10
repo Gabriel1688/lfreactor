@@ -35,8 +35,8 @@
 		</Compiler>
 		<Linker>
 			<Add library="LfReactord" />
-			<Add library="PocoFoundation" />
-			<Add library="PocoNet" />
+			<Add library="PocoFoundationd" />
+			<Add library="PocoNetd" />
 			<Add directory="../lib" />
 		</Linker>
 		<Unit filename="main.cpp" />

@@ -43,6 +43,8 @@ public:
 protected:
 	~SockNotifier();
 
+	SockNotification* clone(SockNotification* pNotification);
+
 private:
 	std::multiset<SockNotification*> m_notifications;
 	Poco::NotificationCenter m_notifiCenter;

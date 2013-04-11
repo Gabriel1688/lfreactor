@@ -50,18 +50,20 @@ void SockNotifier::dispatch(SockNotification* pNotification)
 {
 	static Poco::Net::Socket nullSocket;
 
-	pNotification->setSocket(m_socket);
-	pNotification->duplicate();
+	Poco::AutoPtr<SockNotification> pNf = clone(pNotification);
+
+	pNf->setSocket(m_socket);
+	pNf->duplicate();
 	try
 	{
-		m_notifiCenter.postNotification(pNotification);
+		m_notifiCenter.postNotification(pNf);
 	}
 	catch (...)
 	{
-		pNotification->setSocket(nullSocket);
+		pNf->setSocket(nullSocket);
 		throw;
 	}
-	pNotification->setSocket(nullSocket);
+	pNf->setSocket(nullSocket);
 }
 
 bool SockNotifier::accepts(SockNotification* pNotification)
@@ -118,6 +120,37 @@ bool SockNotifier::hasObserver(const Poco::AbstractObserver& observer) const
     }
 
     return false;
+}
+
+SockNotification* SockNotifier::clone(SockNotification* pNotification)
+{
+    SockNotification* pNf;
+    if (dynamic_cast<ReadableNotification*>(pNotification))
+    {
+        pNf = new ReadableNotification(&pNotification->source());
+    }
+    else if (dynamic_cast<WritableNotification*>(pNotification))
+    {
+        pNf = new WritableNotification(&pNotification->source());
+    }
+    else if (dynamic_cast<ErrorNotification*>(pNotification))
+    {
+        pNf = new ErrorNotification(&pNotification->source());
+    }
+    else if (dynamic_cast<TimeoutNotification*>(pNotification))
+    {
+        pNf = new TimeoutNotification(&pNotification->source());
+    }
+    else if (dynamic_cast<IdleNotification*>(pNotification))
+    {
+        pNf = new IdleNotification(&pNotification->source());
+    }
+    else
+    {
+        pNf = new ShutdownNotification(&pNotification->source());
+    }
+
+    return pNf;
 }
 
 END_CXX_NAMESPACE_DEFINITION

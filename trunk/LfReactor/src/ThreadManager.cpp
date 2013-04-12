@@ -15,14 +15,20 @@ ThreadManager::~ThreadManager()
 {
 }
 
-void ThreadManager::addEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer)
+void ThreadManager::addEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer, Type type)
 {
-    m_reactor->addEventHandler(socket, LfEventObserver(socket, observer, *this));
+    if (AUTOSUSRES == type)
+        m_reactor->addEventHandler(socket, LfEventObserver(socket, observer, *this));
+    else if (MANUSUSRES == type)
+        m_reactor->addEventHandler(socket, observer);
 }
 
-void ThreadManager::removeEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer)
+void ThreadManager::removeEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer, Type type)
 {
-    m_reactor->removeEventHandler(socket, LfEventObserver(socket, observer, *this));
+    if (AUTOSUSRES == type)
+        m_reactor->removeEventHandler(socket, LfEventObserver(socket, observer, *this));
+    else if (MANUSUSRES == type)
+        m_reactor->removeEventHandler(socket, observer);
 }
 
 LfThread* ThreadManager::join(LfThread* lfThr)

@@ -39,18 +39,18 @@ public:
 	virtual void registerConnector(ThreadManager& thrMgr)
 	{
 		m_thrManager = &thrMgr;
-		m_thrManager->addEventHandler(m_socket, Poco::Observer<SockConnector, ReadableNotification>(*this, &SockConnector::onReadable));
-		m_thrManager->addEventHandler(m_socket, Poco::Observer<SockConnector, WritableNotification>(*this, &SockConnector::onWritable));
-		m_thrManager->addEventHandler(m_socket, Poco::Observer<SockConnector, ErrorNotification>(*this, &SockConnector::onError));
+		m_thrManager->addEventHandler(m_socket, Poco::Observer<SockConnector, ReadableNotification>(*this, &SockConnector::onReadable), ThreadManager::MANUSUSRES);
+		m_thrManager->addEventHandler(m_socket, Poco::Observer<SockConnector, WritableNotification>(*this, &SockConnector::onWritable), ThreadManager::MANUSUSRES);
+		m_thrManager->addEventHandler(m_socket, Poco::Observer<SockConnector, ErrorNotification>(*this, &SockConnector::onError), ThreadManager::MANUSUSRES);
 	}
 
 	virtual void unregisterConnector()
 	{
 		if (m_thrManager)
 		{
-			m_thrManager->removeEventHandler(m_socket, Poco::Observer<SockConnector, ReadableNotification>(*this, &SockConnector::onReadable));
-			m_thrManager->removeEventHandler(m_socket, Poco::Observer<SockConnector, WritableNotification>(*this, &SockConnector::onWritable));
-			m_thrManager->removeEventHandler(m_socket, Poco::Observer<SockConnector, ErrorNotification>(*this, &SockConnector::onError));
+			m_thrManager->removeEventHandler(m_socket, Poco::Observer<SockConnector, ReadableNotification>(*this, &SockConnector::onReadable), ThreadManager::MANUSUSRES);
+			m_thrManager->removeEventHandler(m_socket, Poco::Observer<SockConnector, WritableNotification>(*this, &SockConnector::onWritable), ThreadManager::MANUSUSRES);
+			m_thrManager->removeEventHandler(m_socket, Poco::Observer<SockConnector, ErrorNotification>(*this, &SockConnector::onError), ThreadManager::MANUSUSRES);
 		}
 	}
 

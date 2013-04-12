@@ -27,8 +27,6 @@ public:
     ~ServiceHandler()
     {
         m_thMgr->removeEventHandler(m_socket, Poco::Observer<ServiceHandler, LfReactor::ReadableNotification>(*this, &ServiceHandler::onReadable));
-        Mutex::ScopedLock lock(consoleMutex);
-        printf("thread %lu servid %lu service handler deleted\n", Poco::Thread::currentTid(), (unsigned long)this);
     }
 
     void onReadable(LfReactor::ReadableNotification* pNotification)
@@ -45,8 +43,6 @@ public:
 
         if (n <= 0)
         {
-            Mutex::ScopedLock lock(consoleMutex);
-            printf("thread %lu delete servid %lu service handler\n", Poco::Thread::currentTid(), (unsigned long)this);
             delete this;
             return;
         }
@@ -85,7 +81,7 @@ public:
         Net::StreamSocket socket;
         socket.connect(m_address);
 
-        int i = 10;
+        int i = 3;
         do
         {
             char msg[100];
@@ -113,17 +109,28 @@ public:
         m_socket(socket), m_thMgr(&thMgr)
     {
         m_thMgr->addEventHandler(m_socket, Poco::Observer<ClientHandler, LfReactor::ReadableNotification>(*this, &ClientHandler::onReadable));
-        char msg[100];
-        memset(msg, 0, sizeof(msg));
-        strcpy(msg, "client handler connect to you!");
-        socket.sendBytes(msg, strlen(msg) + 1);
+        m_thMgr->addEventHandler(m_socket, Poco::Observer<ClientHandler, LfReactor::WritableNotification>(*this, &ClientHandler::onWriteable));
+        Mutex::ScopedLock lock(consoleMutex);
+        printf("thread %lu create client handler %lu\n", Poco::Thread::currentTid(), (unsigned long)this);
     }
 
     ~ClientHandler()
     {
         m_thMgr->removeEventHandler(m_socket, Poco::Observer<ClientHandler, LfReactor::ReadableNotification>(*this, &ClientHandler::onReadable));
+    }
+
+    void onWriteable(LfReactor::WritableNotification* pNotification)
+    {
+        pNotification->release();
+
         Mutex::ScopedLock lock(consoleMutex);
-        cout << "thread " << Poco::Thread::currentTid() << " clieid " << (unsigned long)this << " client handler deleted" << endl;
+        printf("thread %lu with clientid %lu client handler onWriteable\n", Poco::Thread::currentTid(), (unsigned long)this);
+
+        char msg[100];
+        memset(msg, 0, sizeof(msg));
+        strcpy(msg, "client handler connect to you!");
+        m_socket.sendBytes(msg, strlen(msg) + 1);
+        m_thMgr->removeEventHandler(m_socket, Poco::Observer<ClientHandler, LfReactor::WritableNotification>(*this, &ClientHandler::onWriteable));
     }
 
     void onReadable(LfReactor::ReadableNotification* pNotification)
@@ -164,7 +171,6 @@ int main()
     Net::ServerSocket socket(ssa);
     Net::SocketAddress addr("localhost", socket.address().port());
     LfReactor::SockAcceptor<ServiceHandler> acceptor(socket, thrMgr);
-    //LfReactor::SockConnector<ClientHandler> connector(addr, thrMgr);
     LfReactor::LfThread thr1(&thrMgr);
     LfReactor::LfThread thr2(&thrMgr);
     LfReactor::LfThread thr3(&thrMgr);
@@ -176,6 +182,22 @@ int main()
     thrPool.start(thr3);
     thrPool.start(thr4);
 
+    LfReactor::ThreadManager cliThrMgr;
+    LfReactor::SockConnector<ClientHandler> connector1(addr, cliThrMgr);
+    LfReactor::SockConnector<ClientHandler> connector2(addr, cliThrMgr);
+    LfReactor::SockConnector<ClientHandler> connector3(addr, cliThrMgr);
+    LfReactor::SockConnector<ClientHandler> connector4(addr, cliThrMgr);
+    LfReactor::LfThread cliThr1(&cliThrMgr);
+    LfReactor::LfThread cliThr2(&cliThrMgr);
+    LfReactor::LfThread cliThr3(&cliThrMgr);
+    LfReactor::LfThread cliThr4(&cliThrMgr);
+
+    ThreadPool cliThrPool(4);
+    cliThrPool.start(cliThr1);
+    cliThrPool.start(cliThr2);
+    cliThrPool.start(cliThr3);
+    cliThrPool.start(cliThr4);
+
     TestClient test1(1, addr);
     TestClient test2(2, addr);
     TestClient test3(3, addr);
@@ -185,7 +207,7 @@ int main()
     TestClient test7(7, addr);
     TestClient test8(8, addr);
 
-    ThreadPool testPool(8);
+    /*ThreadPool testPool(8);
     testPool.start(test1);
     testPool.start(test2);
     testPool.start(test3);
@@ -195,10 +217,15 @@ int main()
     testPool.start(test7);
     testPool.start(test8);
 
-    testPool.joinAll();
+    testPool.joinAll();*/
+
+    //cliThrMgr.stopAll();
+    cliThrPool.joinAll();
 
     thrMgr.stopAll();
     thrPool.joinAll();
+
+    cout << "services end" << endl;
 
     return 0;
 }

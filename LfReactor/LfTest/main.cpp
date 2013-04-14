@@ -75,8 +75,6 @@ public:
             printf("thread %lu get message: %s\n", Poco::Thread::currentTid(), msg);
         }
 
-        //Poco::Thread::sleep(1000);
-
         memset(msg, 0, sizeof(msg));
         strcpy(msg, "bye");
         m_socket.sendBytes(msg, strlen(msg) + 1);
@@ -109,13 +107,13 @@ public:
         {
             char msg[100];
             memset(msg, 0, sizeof(msg));
-            sprintf(msg, "No. %d tester %d times say hello to you!", m_testNo, i);
+            sprintf(msg, "No. %d tester say hello to you! i = %d", m_testNo, i);
             socket.sendBytes(msg, strlen(msg) + 1);
 
             memset(msg, 0, sizeof(msg));
             socket.receiveBytes(msg, sizeof(msg));
-            //Mutex::ScopedLock lock(consoleMutex);
-            //cout << "No." << m_testNo << " tester receive replay message: " << msg << endl;
+            Mutex::ScopedLock lock(consoleMutex);
+            cout << "No." << m_testNo << " tester receive replay message: " << msg << endl;
             --i;
         } while (i > 0);
     }
@@ -225,24 +223,16 @@ int main()
     TestClient test2(2, addr);
     TestClient test3(3, addr);
     TestClient test4(4, addr);
-    TestClient test5(5, addr);
-    TestClient test6(6, addr);
-    TestClient test7(7, addr);
-    TestClient test8(8, addr);
 
-    /*ThreadPool testPool(8);
+    ThreadPool testPool(4);
     testPool.start(test1);
     testPool.start(test2);
     testPool.start(test3);
     testPool.start(test4);
-    testPool.start(test5);
-    testPool.start(test6);
-    testPool.start(test7);
-    testPool.start(test8);
 
-    testPool.joinAll();*/
+    testPool.joinAll();
 
-    //cliThrMgr.stopAll();
+    cliThrMgr.stopAll();
     cliThrPool.joinAll();
 
     thrMgr.stopAll();

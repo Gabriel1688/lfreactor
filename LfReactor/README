@@ -1,0 +1,19 @@
+The LfReactor library based on poco c++ libraries
+This library implement leader/followers pattern with reactor pattern
+
+ATTENTION!
+==========
+Before building the source code, you should the poco c++'s Foundation
+library and Net library well. you should configure the poco c++ libraries
+environment well.More details please see poco c++ library's README
+
+BUILDING ON LINUX
+=================
+You can use codeblocks open the LfReactor.workspace file to build it
+
+BUILDING ON WINDOWS
+===================
+You can use visual studio 9.0(2008) to open the LfReactor9.sln to build it
+or you can use the higher version ide to build it
+
+enjoy it

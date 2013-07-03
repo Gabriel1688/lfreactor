@@ -24,7 +24,6 @@
 // DEALINGS IN THE SOFTWARE.
 //
 
-#include "Poco/ThreadPool.h"
 #include "Poco/Net/StreamSocket.h"
 #include "LfReactor/SockAcceptor.h"
 #include "LfReactor/SockConnector.h"
@@ -56,13 +55,17 @@ public:
     {
         pNotification->release();
 
-        Mutex::ScopedLock lock(consoleMutex);
-        printf("thread %lu with servid %lu service handler onReadable\n", Poco::Thread::currentTid(), (unsigned long)this);
+        {
+            Mutex::ScopedLock lock(consoleMutex);
+            printf("thread %lu with servid %lu service handler onReadable\n", Poco::Thread::currentTid(), (unsigned long)this);
+        }
 
         char msg[100];
         memset(msg, 0, sizeof(msg));
 
         int n = m_socket.receiveBytes(msg, sizeof(msg));
+
+        Thread::sleep(500);
 
         if (n <= 0)
         {
@@ -112,8 +115,10 @@ public:
 
             memset(msg, 0, sizeof(msg));
             socket.receiveBytes(msg, sizeof(msg));
-            Mutex::ScopedLock lock(consoleMutex);
-            cout << "No." << m_testNo << " tester receive replay message: " << msg << endl;
+            {
+                Mutex::ScopedLock lock(consoleMutex);
+                cout << "No." << m_testNo << " tester receive replay message: " << msg << endl;
+            }
             --i;
         } while (i > 0);
     }
@@ -144,14 +149,17 @@ public:
     {
         pNotification->release();
 
-        Mutex::ScopedLock lock(consoleMutex);
-        printf("thread %lu with clientid %lu client handler onWriteable\n", Poco::Thread::currentTid(), (unsigned long)this);
+        {
+            Mutex::ScopedLock lock(consoleMutex);
+            printf("thread %lu with clientid %lu client handler onWriteable\n", Poco::Thread::currentTid(), (unsigned long)this);
+        }
 
         char msg[100];
         memset(msg, 0, sizeof(msg));
         strcpy(msg, "client handler connect to you!");
         m_socket.sendBytes(msg, strlen(msg) + 1);
         m_thMgr->removeEventHandler(m_socket, Poco::Observer<ClientHandler, LfReactor::WritableNotification>(*this, &ClientHandler::onWriteable));
+        Thread::sleep(200);
     }
 
     void onReadable(LfReactor::ReadableNotification* pNotification)
@@ -176,6 +184,8 @@ public:
             cout << "thread " << Poco::Thread::currentTid() << " client handler get message: " << msg << endl;
         }
 
+        Thread::sleep(200);
+
         m_socket.shutdownSend();
     }
 
@@ -187,37 +197,22 @@ private:
 int main()
 {
     LfReactor::SockReactor reactor;
-    LfReactor::ThreadManager thrMgr(&reactor);
+    LfReactor::ThreadManager thrMgr(&reactor, 4);
     Net::SocketAddress ssa;
     Net::ServerSocket socket(ssa);
     Net::SocketAddress addr("localhost", socket.address().port());
     LfReactor::SockAcceptor<ServiceHandler> acceptor(socket, thrMgr);
-    LfReactor::LfThread thr1(&thrMgr);
-    LfReactor::LfThread thr2(&thrMgr);
-    LfReactor::LfThread thr3(&thrMgr);
-    LfReactor::LfThread thr4(&thrMgr);
 
-    ThreadPool thrPool(4);
-    thrPool.start(thr1);
-    thrPool.start(thr2);
-    thrPool.start(thr3);
-    thrPool.start(thr4);
+    thrMgr.startAll();
 
-    LfReactor::ThreadManager cliThrMgr;
+
+    LfReactor::SockReactor cliReactor;
+    LfReactor::ThreadManager cliThrMgr(&cliReactor, 4);
     LfReactor::SockConnector<ClientHandler> connector1(addr, cliThrMgr);
     LfReactor::SockConnector<ClientHandler> connector2(addr, cliThrMgr);
     LfReactor::SockConnector<ClientHandler> connector3(addr, cliThrMgr);
     LfReactor::SockConnector<ClientHandler> connector4(addr, cliThrMgr);
-    LfReactor::LfThread cliThr1(&cliThrMgr);
-    LfReactor::LfThread cliThr2(&cliThrMgr);
-    LfReactor::LfThread cliThr3(&cliThrMgr);
-    LfReactor::LfThread cliThr4(&cliThrMgr);
-
-    ThreadPool cliThrPool(4);
-    cliThrPool.start(cliThr1);
-    cliThrPool.start(cliThr2);
-    cliThrPool.start(cliThr3);
-    cliThrPool.start(cliThr4);
+    cliThrMgr.startAll();
 
     TestClient test1(1, addr);
     TestClient test2(2, addr);
@@ -233,10 +228,8 @@ int main()
     testPool.joinAll();
 
     cliThrMgr.stopAll();
-    cliThrPool.joinAll();
 
     thrMgr.stopAll();
-    thrPool.joinAll();
 
     cout << "services end" << endl;
 

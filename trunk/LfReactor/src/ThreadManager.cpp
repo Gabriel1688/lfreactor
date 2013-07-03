@@ -30,12 +30,22 @@
 
 BEGIN_CXX_NAMESPACE_DEFINITION
 
-ThreadManager::ThreadManager(SockReactor* reactor) : m_reactor(reactor), m_leaderThr(0)
+ThreadManager::ThreadManager(SockReactor* reactor, int threadCount) : m_reactor(reactor), m_leaderThr(0),
+m_threadPool(threadCount)
 {
+    for (int i = 0; i < threadCount; ++i)
+    {
+        m_workThreads.push_back(new LfThread(this));
+    }
 }
 
 ThreadManager::~ThreadManager()
 {
+    std::vector<LfThread*>::iterator it;
+    for (it = m_workThreads.begin(); it != m_workThreads.end(); ++it)
+    {
+        delete (*it);
+    }
 }
 
 void ThreadManager::addEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer, Type type)
@@ -82,18 +92,30 @@ void ThreadManager::handleEvents()
 	m_reactor->handleEvents();
 }
 
+void ThreadManager::startAll()
+{
+    std::vector<LfThread*>::iterator it;
+    for (it = m_workThreads.begin(); it != m_workThreads.end(); ++it)
+    {
+        m_threadPool.start(*(*it));
+    }
+}
+
 void ThreadManager::stopAll()
 {
+    std::vector<LfThread*>::iterator it;
+    for (it = m_workThreads.begin(); it != m_workThreads.end(); ++it)
+    {
+        (*it)->stop();
+    }
+
+    m_threadPool.joinAll();
+
     Poco::Mutex::ScopedLock locker(m_thrMutex);
     while (!m_thrStack.empty())
     {
-        LfThread* lfThr = m_thrStack.top();
-        lfThr->stop();
         m_thrStack.pop();
     }
-
-    if (m_leaderThr)
-        m_leaderThr->stop();
 }
 
 void ThreadManager::suspendEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer)

@@ -28,6 +28,8 @@
 #define THREADMANAGER_H
 
 #include <stack>
+#include <vector>
+#include "Poco/ThreadPool.h"
 #include "NameSpaceDefine.h"
 #include ADD_QUOTE(INC_NAME_HEADER(NAMESPACE_NAME, SockReactor.h))
 #include ADD_QUOTE(INC_NAME_HEADER(NAMESPACE_NAME, LfThread.h))
@@ -38,7 +40,7 @@ class LfEventObserver;
 class DYNAMIC_LIB ThreadManager
 {
 public:
-	ThreadManager(SockReactor* SockReactor = &SockReactor::instance());
+	ThreadManager(SockReactor* SockReactor = &SockReactor::instance(), int threadCount = 2);
 	~ThreadManager();
 
 	enum Type
@@ -57,6 +59,8 @@ public:
 
 	void handleEvents();
 
+	void startAll();
+
 	void stopAll();
 
 private:
@@ -69,6 +73,9 @@ private:
 	Poco::Mutex m_thrMutex;
 	std::stack<LfThread*> m_thrStack;
 	LfThread* m_leaderThr;
+
+    std::vector<LfThread*> m_workThreads;
+	Poco::ThreadPool m_threadPool;
 
 	friend class LfEventObserver;
 };

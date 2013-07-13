@@ -261,9 +261,10 @@ void SockReactor::suspendEventHandler(const Poco::Net::Socket& socket, const Poc
 		if (it != m_eventHandlers.end())
 		{
 			pNotifier = it->second;
-			pNotifier->suspendObserver(this, observer);
 		}
 	}
+	if (pNotifier)
+        pNotifier->suspendObserver(this, observer);
 }
 
 void SockReactor::resumeEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer)
@@ -276,10 +277,10 @@ void SockReactor::resumeEventHandler(const Poco::Net::Socket& socket, const Poco
 		if (it != m_eventHandlers.end())
 		{
 			pNotifier = it->second;
-			if (pNotifier->hasObserver(observer))
-                pNotifier->resumeObserver(this, observer);
 		}
 	}
+	if (pNotifier)
+        pNotifier->resumeObserver(this, observer);
 }
 
 END_CXX_NAMESPACE_DEFINITION

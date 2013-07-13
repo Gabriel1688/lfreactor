@@ -44,18 +44,17 @@ void SockNotifier::addObserver(SockReactor* pReactor, const Poco::AbstractObserv
 {
 	m_notifiCenter.addObserver(observer);
 	{
-	    Poco::Mutex::ScopedLock locker(m_obsMutex);
+	    Poco::Mutex::ScopedLock locker(m_mutex);
 	    m_observers.push_back(observer.clone());
+	    resumeObserver(pReactor, observer);
 	}
-
-    resumeObserver(pReactor, observer);
 }
 
 void SockNotifier::removeObserver(SockReactor* pReactor, const Poco::AbstractObserver& observer)
 {
 	m_notifiCenter.removeObserver(observer);
 	{
-	    Poco::Mutex::ScopedLock lock(m_obsMutex);
+	    Poco::Mutex::ScopedLock lock(m_mutex);
         for (ObserverList::iterator it = m_observers.begin(); it != m_observers.end(); ++it)
         {
             if (observer.equals(**it))
@@ -64,9 +63,8 @@ void SockNotifier::removeObserver(SockReactor* pReactor, const Poco::AbstractObs
                 break;
             }
         }
+        suspendObserver(pReactor, observer);
 	}
-
-	suspendObserver(pReactor, observer);
 }
 
 void SockNotifier::dispatch(SockNotification* pNotification)
@@ -96,6 +94,7 @@ bool SockNotifier::accepts(SockNotification* pNotification)
 
 void SockNotifier::suspendObserver(SockReactor* pReactor, const Poco::AbstractObserver& observer)
 {
+    Poco::Mutex::ScopedLock lock(m_mutex);
     std::multiset<SockNotification*>::iterator it = m_notifications.end();
     if (observer.accepts(pReactor->m_pReadableNotification))
 		it = m_notifications.find(pReactor->m_pReadableNotification.get());
@@ -111,6 +110,19 @@ void SockNotifier::suspendObserver(SockReactor* pReactor, const Poco::AbstractOb
 
 void SockNotifier::resumeObserver(SockReactor* pReactor, const Poco::AbstractObserver& observer)
 {
+    Poco::Mutex::ScopedLock lock(m_mutex);
+    ObserverList::const_iterator it;
+    for (it = m_observers.begin(); it != m_observers.end(); ++it)
+    {
+        if (observer.equals(**it))
+        {
+            break;
+        }
+    }
+
+    if (it == m_observers.end())
+        return;
+
     if (observer.accepts(pReactor->m_pReadableNotification))
 		m_notifications.insert(pReactor->m_pReadableNotification.get());
 	else if (observer.accepts(pReactor->m_pWritableNotification))
@@ -129,20 +141,6 @@ bool SockNotifier::hasObservers() const
 std::size_t SockNotifier::countObservers() const
 {
 	return m_notifiCenter.countObservers();
-}
-
-bool SockNotifier::hasObserver(const Poco::AbstractObserver& observer) const
-{
-    Poco::Mutex::ScopedLock lock(m_obsMutex);
-    for (ObserverList::const_iterator it = m_observers.begin(); it != m_observers.end(); ++it)
-    {
-        if (observer.equals(**it))
-        {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 SockNotification* SockNotifier::clone(SockNotification* pNotification)

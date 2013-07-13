@@ -64,6 +64,16 @@ void ThreadManager::removeEventHandler(const Poco::Net::Socket& socket, const Po
         m_reactor->removeEventHandler(socket, observer);
 }
 
+void ThreadManager::suspendEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer)
+{
+    m_reactor->suspendEventHandler(socket, observer);
+}
+
+void ThreadManager::resumeEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer)
+{
+    m_reactor->resumeEventHandler(socket, observer);
+}
+
 LfThread* ThreadManager::join(LfThread* lfThr)
 {
 	Poco::Mutex::ScopedLock locker(m_thrMutex);
@@ -116,16 +126,6 @@ void ThreadManager::stopAll()
     {
         m_thrStack.pop();
     }
-}
-
-void ThreadManager::suspendEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer)
-{
-    m_reactor->suspendEventHandler(socket, observer);
-}
-
-void ThreadManager::resumeEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer)
-{
-    m_reactor->resumeEventHandler(socket, observer);
 }
 
 END_CXX_NAMESPACE_DEFINITION

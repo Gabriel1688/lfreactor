@@ -53,6 +53,10 @@ public:
 
 	void removeEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer, Type type = AUTOSUSRES);
 
+	void suspendEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer);
+
+	void resumeEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer);
+
 	LfThread* join(LfThread* lfThr);
 
 	void promoteNewLeader();
@@ -64,10 +68,6 @@ public:
 	void stopAll();
 
 private:
-    void suspendEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer);
-
-	void resumeEventHandler(const Poco::Net::Socket& socket, const Poco::AbstractObserver& observer);
-
 	SockReactor* m_reactor;
 
 	Poco::Mutex m_thrMutex;

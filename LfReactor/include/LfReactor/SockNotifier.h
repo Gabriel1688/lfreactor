@@ -58,8 +58,6 @@ public:
 
     std::size_t countObservers() const;
 
-    bool hasObserver(const Poco::AbstractObserver& observer) const;
-
     void suspendObserver(SockReactor* pReactor, const Poco::AbstractObserver& observer);
     void resumeObserver(SockReactor* pReactor, const Poco::AbstractObserver& observer);
 
@@ -70,6 +68,7 @@ protected:
 
 private:
 	std::multiset<SockNotification*> m_notifications;
+
 	Poco::NotificationCenter m_notifiCenter;
 	Poco::Net::Socket  m_socket;
 
@@ -77,7 +76,7 @@ private:
 	typedef std::vector<AbstractObserverPtr> ObserverList;
 
 	ObserverList  m_observers; //use to record observers
-	mutable Poco::Mutex m_obsMutex;
+	Poco::Mutex m_mutex;
 };
 
 END_CXX_NAMESPACE_DEFINITION
